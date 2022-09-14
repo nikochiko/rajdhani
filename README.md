@@ -28,3 +28,5 @@ names that you want to host on your platform. This is a basic authentication che
 deployment.
 
 All set!
+
+enabled github actions
