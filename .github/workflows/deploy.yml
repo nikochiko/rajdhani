@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: pipalacademy/hamr@v0.2
+      - uses: wei/curl@v1
         with:
-          server_url: https://hamr.rajdhani.pipal.in
-          app_name: ${{ github.actor }}
+          args: -X POST https://rajdhani.pipal.in/${{ github.actor }}/deploy
