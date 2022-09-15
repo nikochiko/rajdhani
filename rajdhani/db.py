@@ -2,9 +2,18 @@
 Module to interact with the database.
 """
 
+from sqlalchemy import MetaData, Table, create_engine, func, or_
+from sqlalchemy.sql import select
+
 from . import db_ops
+from . import config
 
 db_ops.ensure_db()
+
+engine = create_engine(config.db_uri)
+metadata_obj = MetaData()
+train = Table("train", metadata_obj, autoload_with=engine)
+station = Table("station", metadata_obj, autoload_with=engine)
 
 
 def search_stations(q):
@@ -15,15 +24,19 @@ def search_stations(q):
     The q is the few characters of the station name or
     code entered by the user.
     """
-    # TODO: make a db query to get the matching stations
-    # and replace the following dummy implementation
 
-    return [
-        {"code": "SBC", "name": "Bangalore"},
-        {"code": "MAS", "name": "Chennai"},
-        {"code": "NDLS", "name": "New Delhi"},
-        {"code": "MMCT", "name": "Mumbai"}
-    ]
+    with engine.connect() as conn:
+        result = conn.execute(
+            select(station)
+            .where(
+                or_(func.upper(station.c.name).startswith(q),
+                    func.upper(station.c.code).startswith(q))
+            )
+            .limit(10)
+        )
+
+        return [dict(row) for row in result]
+
 
 def search_trains(from_station, to_station, date, ticket_class):
     """Returns all the trains that source to destination stations on
