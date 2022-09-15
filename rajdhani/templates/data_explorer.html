@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Data Explorer</h2>
+    <em>Explore data by writing any SQL query</em>
+</div>
+
+<div class="mb-4">
+    The database has two tables train and station. See <a href="https://gist.github.com/anandology/60417923ddcee758f0eb70676439a4ae">schema</a>.
+
+    <div>
+    Some sample queries:
+<pre>
+SELECT * FROM train limit 10;
+SELECT * FROM train where from_station_code='SBC';
+SELECT * FROM station where state='Karnataka';
+</pre>
+    </div>
+</div>
+
+<div class="mb-5">
+    <form method="get">
+        <div class="mb-2">
+            <label class="form-label">Your SQL query</label>
+            {% set default_query = 'SELECT name, number FROM train LIMIT 2' %}
+            <textarea name="q" class="form-control" autofocus>{{ query or default_query }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Run</button>
+    </form>
+</div>
+
+<div id="output">
+    {% if error %}
+    <div id="errors">
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if columns or rows %}
+    <div id="output-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    {% for colname in columns %}
+                    <th scope="col">{{ colname }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

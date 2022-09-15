@@ -12,6 +12,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Notify rajdhani-challenge about the update
         env:
-          USERNAME: ${{ github.actor }}
+          USERNAME: ${{ github.repository_owner }}
         run: |
           curl -X POST "https://rajdhani.pipal.in/$USERNAME/deploy"

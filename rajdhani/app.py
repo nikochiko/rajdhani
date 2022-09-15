@@ -1,6 +1,10 @@
+import sqlite3
+
 from flask import Flask, jsonify, render_template, request
 from . import config
 from . import db
+from . import db_ops
+
 
 app = Flask(__name__)
 
@@ -39,3 +43,33 @@ def search():
         to_station=to_station,
         ticket_class=ticket_class,
         date=date)
+
+@app.route("/db/reset")
+def reset_db():
+    db_ops.reset_db()
+    return "ok"
+
+@app.route("/db/exec")
+def exec_db():
+    q = request.args.get("q")
+    columns, rows = db_ops.exec_query(q)
+    return {
+        "columns": columns,
+        "rows": rows
+    }
+
+@app.route("/data-explorer")
+def explore_data():
+    q = request.args.get("q")
+
+    error, columns, rows = None, None, None
+    if q:
+        try:
+            columns, rows = db_ops.exec_query(q)
+        except (sqlite3.Error, sqlite3.Warning) as e:
+            error = str(e)
+
+    return render_template(
+        "data_explorer.html",
+        error=error, columns=columns, rows=rows, query=q,
+    )

@@ -2,6 +2,11 @@
 Module to interact with the database.
 """
 
+from . import db_ops
+
+db_ops.ensure_db()
+
+
 def search_stations(q):
     """Returns the top ten stations matching the given query string.
 
