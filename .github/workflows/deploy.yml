@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: wei/curl@v1
-        with:
-          args: -X POST https://rajdhani.pipal.in/${{ github.actor }}/deploy
+      - name: Notify rajdhani-challenge about the update
+        env:
+          USERNAME: ${{ github.actor }}
+        run: |
+          curl -X POST "https://rajdhani.pipal.in/$USERNAME/deploy"
