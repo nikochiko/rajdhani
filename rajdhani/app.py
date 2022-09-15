@@ -1,6 +1,7 @@
 import sqlite3
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request
+from urllib.parse import urlparse
 from . import config
 from . import db
 from . import db_ops
@@ -73,3 +74,11 @@ def explore_data():
         "data_explorer.html",
         error=error, columns=columns, rows=rows, query=q,
     )
+
+@app.route("/progress")
+def progress():
+    url = urlparse(request.base_url)
+    username = url.hostname.split(".", maxsplit=1)[0]
+    redirect_url = f"{config.base_status_page_url}/{username}"
+
+    return redirect(redirect_url, code=302)
