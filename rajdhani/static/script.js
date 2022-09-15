@@ -96,12 +96,12 @@ $(document).ready(function () {
   const $fromText = $("#from-station-text");
   const $toText = $("#to-station-text");
 
-  $fromText.keypress(function () {
+  $fromText.keyup(function () {
     const input = $(this).val();
     refreshAutocomplete(input, $fromList);
   });
 
-  $toText.keypress(function () {
+  $toText.keyup(function () {
     const input = $(this).val();
     refreshAutocomplete(input, $toList);
   });
