@@ -2,7 +2,7 @@
 Module to interact with the database.
 """
 
-from sqlalchemy import MetaData, Table, create_engine, func, or_
+from sqlalchemy import MetaData, Table, create_engine, func, or_, and_
 from sqlalchemy.sql import select
 
 from . import db_ops
@@ -14,6 +14,10 @@ engine = create_engine(config.db_uri)
 metadata_obj = MetaData()
 train = Table("train", metadata_obj, autoload_with=engine)
 station = Table("station", metadata_obj, autoload_with=engine)
+
+
+def pythonify(sqla_result):
+    return [dict(row) for row in sqla_result]
 
 
 def search_stations(q):
@@ -35,7 +39,7 @@ def search_stations(q):
             .limit(10)
         )
 
-        return [dict(row) for row in result]
+        return pythonify(result)
 
 
 def search_trains(from_station, to_station, date, ticket_class):
@@ -45,34 +49,34 @@ def search_trains(from_station, to_station, date, ticket_class):
 
     This is used to get show the trains on the search results page.
     """
-    # TODO: make a db query to get the matching trains
-    # and replace the following dummy implementation
 
-    return [
-        {
-            "train_number": "12028",
-            "train_name": "Shatabdi Exp",
-            "from_station_code": "SBC",
-            "from_station_name": "Bangalore",
-            "to_station_code": "MAS",
-            "to_station_name": "Chennai",
-            "start_date": date,
-            "start_time": "06:00",
-            "end_date":  date,
-            "end_time": "11:00",
-            "duration": "05:00"
-        },
-        {
-            "train_number": "12608",
-            "train_name": "Lalbagh Exp",
-            "from_station_code": "SBC",
-            "from_station_name": "Bangalore",
-            "to_station_code": "MAS",
-            "to_station_name": "Chennai",
-            "start_date": date,
-            "start_time": "06:20",
-            "end_date":  date,
-            "end_time": "12:15",
-            "duration": "05:55"
-        },
-    ]
+    with engine.connect() as conn:
+        result = conn.execute(
+            select(
+                train.c.number.label("train_number"),
+                train.c.name.label("train_name"),
+                train.c.from_station_code,
+                train.c.from_station_name,
+                train.c.to_station_code,
+                train.c.to_station_name,
+                train.c.departure.label("start_time"),
+                train.c.arrival.label("end_time"),
+                train.c.duration_h,
+                train.c.duration_m,
+            )
+            .where(
+                and_(train.c.from_station_code == from_station,
+                     train.c.to_station_code == to_station)
+            )
+        )
+
+        sane_result = pythonify(result)
+
+    for trn in sane_result:
+        duration_h, duration_m = trn.pop("duration_h"), trn.pop("duration_m")
+        trn.update(duration=f"{duration_h}:{duration_m}")
+        trn.update(start_date="Today", end_date="Today")
+        trn["start_time"] = trn["start_time"].rsplit(":", maxsplit=1)[0]
+        trn["end_time"] = trn["end_time"].rsplit(":", maxsplit=1)[0]
+
+    return sane_result
