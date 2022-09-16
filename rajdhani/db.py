@@ -36,7 +36,7 @@ def search_stations(q):
             select(station)
             .where(
                 or_(func.upper(station.c.name).startswith(q),
-                    func.upper(station.c.code).startswith(q))
+                    func.upper(station.c.code).contains(q))
             )
             .limit(10)
         )
