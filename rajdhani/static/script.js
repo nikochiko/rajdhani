@@ -8,6 +8,14 @@ function getQuerystring(obj) {
     .join("&");
 }
 
+function debounce(func, timeout = 300) {
+    let timer
+    return (...args) => {
+        clearTimeout(timer)
+        timer = setTimeout(() => { func.apply(this, args) }, timeout)
+    }
+}
+
 async function getAutocomplete(input) {
   const qs = getQuerystring({ q: input });
   const url = `${autocompleteURL}?${qs}`;
@@ -96,14 +104,16 @@ $(document).ready(function () {
   const $fromText = $("#from-station-text");
   const $toText = $("#to-station-text");
 
-  $fromText.keyup(function () {
-    const input = $(this).val();
-    refreshAutocomplete(input, $fromList);
+  let debouncedAutocomplete = debounce(refreshAutocomplete)
+
+  $fromText.keyup(function() {
+    const input = $(this).val()
+    debouncedAutocomplete(input, $fromList)
   });
 
-  $toText.keyup(function () {
-    const input = $(this).val();
-    refreshAutocomplete(input, $toList);
+  $toText.keyup(function() {
+    const input = $(this).val()
+    debouncedAutocomplete(input, $toList)
   });
 
   $fromText.focusin(function () {
