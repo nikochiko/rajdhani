@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from . import config
 from . import db
 from . import db_ops
+from . import payments
 
 
 app = Flask(__name__)
@@ -82,3 +83,34 @@ def progress():
     redirect_url = f"{config.base_status_page_url}/{username}"
 
     return redirect(redirect_url, code=302)
+
+@app.route("/checkout")
+def checkout():
+    train_number = request.args.get("train_number")
+    ticket_class = request.args.get("ticket_class")
+
+    if not train_number or not ticket_class:
+        return "train_number or ticket_class is not given", 400
+
+    success_url = request.url_root + "payment/success"
+    cancel_url = request.url_root + "payment/cancel"
+
+    try:
+        checkout_session = payments.create_checkout_session(
+            train_number, ticket_class,
+            success_url=success_url, cancel_url=cancel_url
+        )
+    except Exception as e:
+        return str(e), 500
+
+    return redirect(checkout_session.url, code=303)
+
+
+@app.route("/payment/success")
+def payment_success():
+    return "Thanks! Your order was successful"
+
+
+@app.route("/payment/cancel")
+def payment_cancel():
+    return "Oops. Your order was cancelled."
