@@ -36,7 +36,7 @@ def search_stations(q):
             select(station)
             .where(
                 or_(func.upper(station.c.name).like(f"%{q.upper()}%"),
-                    func.upper(station.c.name).like(f"%{q.upper()}%"))
+                    func.upper(station.c.code).like(f"%{q.upper()}%"))
             )
             .limit(10)
         )
