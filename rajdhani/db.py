@@ -56,14 +56,14 @@ def search_trains(from_station, to_station, date, ticket_class):
     with engine.connect() as conn:
         result = conn.execute(
             select(
-                train.c.number.label("train_number"),
-                train.c.name.label("train_name"),
+                train.c.number,
+                train.c.name,
                 train.c.from_station_code,
                 train.c.from_station_name,
                 train.c.to_station_code,
                 train.c.to_station_name,
-                train.c.departure.label("start_time"),
-                train.c.arrival.label("end_time"),
+                train.c.departure,
+                train.c.arrival,
                 train.c.duration_h,
                 train.c.duration_m,
             )
@@ -74,16 +74,7 @@ def search_trains(from_station, to_station, date, ticket_class):
             )
         )
 
-        sane_result = pythonify(result)
-
-    for trn in sane_result:
-        duration_h, duration_m = trn.pop("duration_h"), trn.pop("duration_m")
-        trn.update(duration=f"{duration_h}:{duration_m}")
-        trn.update(start_date="Today", end_date="Today")
-        trn["start_time"] = trn["start_time"].rsplit(":", maxsplit=1)[0]
-        trn["end_time"] = trn["end_time"].rsplit(":", maxsplit=1)[0]
-
-    return sane_result
+        return pythonify(result)
 
 
 def get_alternative_stations(station_code):
