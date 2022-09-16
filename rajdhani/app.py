@@ -15,6 +15,11 @@ app = Flask(__name__)
 def index():
     return render_template("index.html", config=config)
 
+@app.route("/api/flags")
+def api_flags():
+    flags = {k: v for k, v in config.__dict__.items() if k.startswith("flag_")}
+    return jsonify(flags)
+
 @app.route("/api/stations")
 def api_stations():
     q = request.args.get("q")

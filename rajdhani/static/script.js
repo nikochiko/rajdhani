@@ -72,15 +72,15 @@ function getTrainCard(train) {
   return `
   <div class="card mb-2">
     <div class="card-header">
-      <h5>${train.train_name} (${train.train_number})</h5>
+      <h5>${train.name} (${train.number})</h5>
     </div>
     <div class="card-body d-flex justify-content-between">
       <div>
-        <h3>${train.start_time}</h3>
+        <h3>${train.departure}</h3>
         <h5>${train.from_station_name}</h5>
       </div>
       <div>
-        <h3>${train.end_time}</h3>
+        <h3>${train.arrival}</h3>
         <h5>${train.to_station_name}</h5>
       </div>
     </div>

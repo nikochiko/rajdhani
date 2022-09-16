@@ -2,7 +2,7 @@
 as a placeholder until the real implementation is added.
 """
 
-AUTOCOMPLTE_STATIONS = [
+AUTOCOMPLETE_STATIONS = [
     {"code": "ADI", "name": "AHMEDABAD JN"},
     {"code": "SBC", "name": "BANGALORE CITY JN"},
     {"code": "MAS", "name": "CHENNAI CENTRAL"},
