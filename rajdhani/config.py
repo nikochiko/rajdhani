@@ -2,7 +2,7 @@
  # Feature Flags to enable features incrementally
  # Note: Please enable these flags only when the task asks you to do
 
-flag_homepage = False
+flag_homepage = True
 flag_show_schedule_link = False
 flag_ticketclass_in_search = False
 flag_search_filters = False
