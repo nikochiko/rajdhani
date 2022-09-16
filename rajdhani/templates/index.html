@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% if config.enable_homepage %}
+  {% if config.flag_homepage %}
     <div class="page-header">
     <h2>Search Trains</h2>
     <em>Explore India on the wonderful train network!</em>
@@ -34,7 +34,7 @@
 
     <div class="alert alert-warning" role="alert">
       <h4 class="alert-heading">Hold On!</h4>
-      <p>You need to set <code>enable_homepage = True</code> in the <code>rajdhani/config.py</code> to enable the home page.</p>
+      <p>You need to set the feature flag <code>flag_homepage = True</code> in the <code>rajdhani/config.py</code> to enable the home page.</p>
     </div>
   </div>
 

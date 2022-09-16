@@ -6,6 +6,7 @@ from math import sin, cos, sqrt, atan2
 from sqlalchemy import MetaData, Table, create_engine, func, or_, and_
 from sqlalchemy.sql import select
 
+from . import placeholders
 from . import db_ops
 from . import config
 
@@ -41,7 +42,6 @@ def search_stations(q):
         )
 
         return pythonify(result)
-
 
 def search_trains(from_station, to_station, date, ticket_class):
     """Returns all the trains that source to destination stations on

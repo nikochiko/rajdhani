@@ -1,7 +1,14 @@
 
+ # Feature Flags to enable features incrementally
+ # Note: Please enable these flags only when the task asks you to do
 
-# Set this to True to enable the home page
-enable_homepage = True
+flag_homepage = False
+flag_show_schedule_link = False
+flag_ticketclass_in_search = False
+flag_search_filters = False
+
+## Database configurations
+## Note: Please do not modify these
 
 db_path = "trains.db"
 db_uri = f"sqlite:///{db_path}"
