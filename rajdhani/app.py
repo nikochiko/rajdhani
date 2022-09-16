@@ -1,13 +1,17 @@
 import sqlite3
 
-from flask import Flask, jsonify, redirect, render_template, request
+from flask import Flask, abort, g, jsonify, redirect, render_template, request
 from urllib.parse import urlparse
 from . import config
 from . import db
 from . import db_ops
+from . import auth
 
 
 app = Flask(__name__)
+
+app.secret_key = auth.get_secret_key()
+app.before_request(auth.authenticate)
 
 
 @app.route("/")
@@ -98,3 +102,28 @@ def progress():
     redirect_url = f"{config.base_status_page_url}/{username}"
 
     return redirect(redirect_url, code=302)
+
+@app.route("/hello")
+def hello():
+    if "user" in g:
+        return f"Hello, {g.user.name}!"
+    else:
+        abort(403)
+
+@app.route("/magic-link/new")
+def new_magic_link():
+    email = request.args.get("email")
+    user = email and auth.get_user_by_email(email)
+    if user is None:
+        return "User not found", 404
+
+    user.send_magic_link()
+    return "Mail sent! Please wait for it."
+
+@app.route("/magic-link/login/<code>")
+def magic_link(code):
+    user_id = db.get_user_id_from_magic_link_code(code)
+    auth.invalidate_magic_link_code(code)
+    auth.login_user(user_id)
+
+    return "Login successful"

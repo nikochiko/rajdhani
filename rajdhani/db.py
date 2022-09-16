@@ -31,3 +31,11 @@ def search_trains(from_station_code, to_station_code, ticket_class=None):
     # and replace the following dummy implementation
 
     return placeholders.SEARCH_TRAINS
+
+def get_user_id_from_magic_link_code(code):
+    """Returns user id of the user who requested magic link for login
+    and got `code` in the magic link.
+    """
+    # TODO
+
+    return 1

@@ -4,3 +4,5 @@ venv/
 
 trains.db
 *.pyc
+
+secret_key.txt
