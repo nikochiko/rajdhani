@@ -11,7 +11,6 @@ from . import auth
 app = Flask(__name__)
 
 app.secret_key = auth.get_secret_key()
-app.before_request(auth.authenticate)
 
 
 @app.route("/")
@@ -105,25 +104,31 @@ def progress():
 
 @app.route("/hello")
 def hello():
-    if "user" in g:
-        return f"Hello, {g.user.name}!"
+    """Simple endpoint to check the authenticated user is
+    """
+    if (email := auth.get_logged_in_user_email()):
+        return f"Hello, {email}!"
     else:
         abort(403)
 
 @app.route("/magic-link/new")
 def new_magic_link():
     email = request.args.get("email")
-    user = email and auth.get_user_by_email(email)
-    if user is None:
-        return "User not found", 404
+    if not email:
+        return "Need an email!", 400
 
-    user.send_magic_link()
+    auth.send_magic_link(email)
     return "Mail sent! Please wait for it."
 
-@app.route("/magic-link/login/<code>")
-def magic_link(code):
-    user_id = db.get_user_id_from_magic_link_code(code)
-    auth.invalidate_magic_link_code(code)
-    auth.login_user(user_id)
+@app.route("/magic-link/login/<token>")
+def magic_link(token):
+    email = auth.decode_magic_token(token)
+    if email:
+        auth.login_user(email)
+        return "Login successful"
+    else:
+        return "Token is invalid", 400
 
-    return "Login successful"
+@app.route("/login")
+def login():
+    return render_template("login.html")

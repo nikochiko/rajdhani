@@ -1,50 +1,55 @@
 import secrets
 import smtplib
-import sqlite3
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import request, session, g
+from flask import current_app, request, session
+import jwt
 
 from . import config
 
 
 @dataclass
 class User:
-    id: int
-    name: str
     email: str
 
-    def _create_magic_link(self):
-        magic_code = secrets.token_urlsafe(16)
-        with sqlite3.connect(config.db_path) as conn:
-            conn.execute(
-                "insert into magic_link_code (code, user_id) values (?, ?)",
-                (magic_code, self.id)
-            )
 
-        return f"{request.url_root}magic-link/login/{magic_code}"
+def create_magic_link(email):
+    # NOTE: this encodes email plainly in a JWT, this can
+    # be read by anyone who has access to this token.
+    expiration = datetime.now(tz=timezone.utc) + timedelta(seconds=600)
+    token = jwt.encode({"exp": expiration, "email": email},
+                       current_app.secret_key,
+                       algorithm="HS256")
 
-    def send_magic_link(self):
-        # TODO: use `config.smtp` to send an email
-        hostname, port = config.smtp["hostname"], config.smtp["port"]
-        username, password = config.smtp.get("username"), config.smtp.get("password")
-
-        with smtplib.SMTP(hostname, port) as smtp:
-            smtp.ehlo("kaustubh.rajdhani.pipal.in")
-            if username and password:
-                smtp.starttls()
-                smtp.login(username, password)
-
-            magic_link = self._create_magic_link()
-            content = f"Hello, {self.name}!\n\nThis is your magic link: {magic_link}"
-            smtp.sendmail("Kaustubh <kaustubh@rajdhani.pipal.in>",
-                          [self.email], content)
+    return f"{request.url_root}magic-link/login/{token}"
 
 
-def authenticate():
-    if "token" in session:
-        g.user = get_user_by_token(session["token"])
+def decode_magic_token(token):
+    try:
+        decoded = jwt.decode(token, current_app.secret_key,
+                             algorithms=["HS256"])
+    except jwt.exceptions.InvalidTokenError:
+        return None
+    else:
+        return decoded["email"]
+
+
+def send_magic_link(email):
+    hostname, port = config.smtp["hostname"], config.smtp["port"]
+    username, password = config.smtp.get("username"), config.smtp.get("password")
+
+    with smtplib.SMTP(hostname, port) as smtp:
+        smtp.ehlo("kaustubh.rajdhani.pipal.in")
+        if username and password:
+            smtp.starttls()
+            smtp.login(username, password)
+
+        magic_link = create_magic_link(email)
+        content = f"Hello, {email}!\n\nThis is your magic link: {magic_link}"
+        smtp.sendmail("Kaustubh <kaustubh@rajdhani.pipal.in>",
+                      [email], content)
 
 
 def get_secret_key():
@@ -58,41 +63,9 @@ def ensure_secret_key_file():
             f.write(secrets.token_hex())
 
 
-def get_user_by_token(token):
-    with sqlite3.connect(config.db_path) as conn:
-        curs = conn.cursor()
-        curs.execute("select id, name, email from user where token = ?", (token,))
-        row = curs.fetchone()
-
-    return row and User(*row) or None
+def login_user(email):
+    session["user_email"] = email
 
 
-def get_user_by_email(email):
-    with sqlite3.connect(config.db_path) as conn:
-        curs = conn.cursor()
-        curs.execute("select id, name, email from user where email = ?", (email,))
-        row = curs.fetchone()
-
-    return row and User(*row) or None
-
-
-def create_user(name, email):
-    # TODO: validate email?
-    with sqlite3.connect(config.db_path) as conn:
-        curs = conn.execute("insert into user (name, email) values (?, ?) returning id", (name, email))
-        user_id = (row := curs.fetchone()) and row[0]
-
-    return user_id
-
-
-def login_user(user_id):
-    token = secrets.token_hex()
-    with sqlite3.connect(config.db_path) as conn:
-        conn.execute("update user set token = ? where id = ?", (token, user_id))
-
-    session["token"] = token
-
-
-def invalidate_magic_link_code(code):
-    with sqlite3.connect(config.db_path) as conn:
-        conn.execute("delete from magic_link_code where code = ?", (code,))
+def get_logged_in_user_email():
+    return session.get("user_email")

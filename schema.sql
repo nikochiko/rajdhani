@@ -41,17 +41,3 @@ create table schedule (
     arrival text,
     departure text
 );
-
-
-create table user (
-    id      integer primary key,
-    name    text,
-    email   text unique,
-    token   text
-);
-
-
-create table magic_link_code (
-    code    text unique,
-    user_id integer references user(id)
-);

@@ -27,6 +27,12 @@
             <li class="nav-item">
               <a class="nav-link" href="/data-explorer">Data Explorer</a>
             </li>
+          </ul>
+          {% if "user_email" not in session %}
+          <a class="btn btn-dark" href="/login">Login</a>
+          {% else %}
+          <span>Logged in</span>
+          {% endif %}
         </div>
       </div>
     </nav>

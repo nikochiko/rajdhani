@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header mb-5">
+    <h2 class="mb-0">Login</h2>
+    <em>Login with magic link to track your bookings.</em>
+</div>
+<form class="row" method="GET" action="/magic-link/new">
+    <div class="col">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" name="email" class="form-control" id="email" placeholder="name@example.com">
+        </div>
+
+        <button class="btn btn-primary" type="submit">Get magic link</button>
+    </div>
+</form>
+{% endblock %}
