@@ -20,7 +20,13 @@ def search_stations(q):
     # and replace the following dummy implementation
     return placeholders.AUTOCOMPLETE_STATIONS
 
-def search_trains(from_station_code, to_station_code, ticket_class=None):
+def search_trains(
+        from_station_code,
+        to_station_code,
+        ticket_class=None,
+        departure_date=None,
+        departure_time=[],
+        arrival_time=[]):
     """Returns all the trains that source to destination stations on
     the given date. When ticket_class is provided, this should return
     only the trains that have that ticket class.
@@ -31,3 +37,24 @@ def search_trains(from_station_code, to_station_code, ticket_class=None):
     # and replace the following dummy implementation
 
     return placeholders.SEARCH_TRAINS
+
+def get_schedule(train_number):
+    """Returns the schedule of a train.
+    """
+    return placeholders.SCHEDULE
+
+def book_ticket(train_number, ticket_class, departure_date, passenger_name, passenger_email):
+    """Book a ticket for passenger
+    """
+    # TODO: make a db query and insert a new booking
+    # into the booking table
+
+    return placeholders.TRIPS[0]
+
+def get_trips(email):
+    """Returns the bookings made by the user
+    """
+    # TODO: make a db query and get the bookings
+    # made by user with `email`
+
+    return placeholders.TRIPS

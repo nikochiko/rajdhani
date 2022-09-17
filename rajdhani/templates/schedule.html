@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Schedule of Train #{{ train_number }}</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Station Code</th>
+      <th>Station Name</th>
+      <th>Day</th>
+      <th>Arrival</th>
+      <th>Departure</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in schedule %}
+    {% if row.departure or row.arrival %}
+    <tr>
+      <th>{{ row.station_code  }}</th>
+      <th>{{ row.station_name }}</th>
+      <th>{{ row.day | int }}</th>
+      <th>{{ "-" if row.arrival == "None" else row.arrival.rsplit(":", 1)[0] }}</th>
+      <th>{{ "-" if row.departure == "None" else row.departure.rsplit(":", 1)[0] }}</th>
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

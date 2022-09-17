@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header mb-3">
+  <h2>My bookings</h2>
+</div>
+
+<div class="mb-3">
+  {% for booking in bookings %}
+    <div class="card mb-2">
+      <div class="card-header">
+        <h5>{{ booking.train_name }} ({{ booking.train_number }}) </h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          Date: {{ booking.date }}, Class: {{ booking.ticket_class }}
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="text-start">
+            <h5>{{ booking.from_station_name }} - {{ booking.from_station_code }}</h5>
+          </div>
+          <div class="text-end">
+            <h5>{{ booking.to_station_name }} - {{ booking.to_station_code }}</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

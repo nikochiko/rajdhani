@@ -34,13 +34,23 @@
             {% endif %}
           </ul>
           {% if config.flag_login %}
-          {% if "user_email" not in session %}
-          <a class="btn btn-dark" href="/login">Login</a>
-          {% else %}
-          <a class="btn btn-dark" href="/logout">Logout</a>
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            {% if "user_email" in session %}
+            <li>
+              <a class="nav-link" href="/bookings">My Bookings</a>
+            </li>
+            {% endif %}
+            {% if config.flag_login %}
+            <li>
+              {% if "user_email" not in session %}
+              <a class="btn btn-dark" href="/login">Login</a>
+              {% else %}
+              <a class="btn btn-dark" href="/logout">Logout</a>
+              {% endif %}
+            </li>
+            {% endif %}
           {% endif %}
-          {% endif %}
-        </div>
+        </ul>
       </div>
     </nav>
 

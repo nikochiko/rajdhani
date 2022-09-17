@@ -1,5 +1,124 @@
 {% extends "base.html" %}
 
+{% macro SearchFields(args) %}
+  <div class="mb-3" id="from-station-div">
+    <label for="from-station-text" class="form-label">From</label>
+    <input type="text" name="from_station_name" class="form-control" id="from-station-text" value="{{args.from_station_name}}">
+    <input type="hidden" name ="from_station_code" class="form-control" id="from-station" value="{{args.from_station_code}}">
+    <ul id="from-station-autocomplete-items" class="form-control autocomplete-list" style="display: none;" data-text-target="#from-station-text" data-value-target="#from-station">
+    </ul>
+  </div>
+  <div class="mb-3" id="to-station-div">
+    <label for="from-station" class="form-label">To</label>
+    <input type="text" name="to_station_name" class="form-control" id="to-station-text" value="{{args.to_station_name}}">
+    <input type="hidden" name="to_station_code" class="form-control" id="to-station" value="{{args.to_station_code}}">
+    <ul id="to-station-autocomplete-items" class="form-control autocomplete-list" style="display: none;" data-text-target="#to-station-text" data-value-target="#to-station">
+    </ul>
+  </div>
+  <div class="mb-3">
+    <label for="departure-date" class="form-label">Date</label>
+    <input type="date" class="form-control" name="date" value="{{ args.date or today }}"></input>
+  </div>
+  {% if config.flag_ticketclass_in_search %}
+    <div class="mb-3" id="to-station-div">
+      <label for="ticket-class" class="form-label">Class</label>
+      <select name="class" class="form-control" id="ticket-class">
+        <option value="SL" {{ "selected" if args.class == "SL" }}>Sleeper</option>
+        <option value="3A" {{ "selected" if args.class == "3A" }}>Third AC</option>
+        <option value="2A" {{ "selected" if args.class == "2A" }}>Second AC</option>
+        <option value="1A" {{ "selected" if args.class == "1A" }}>Firs AC</option>
+        <option value="FC" {{ "selected" if args.class == "FC" }}>First Class</option>
+        <option value="CC" {{ "selected" if args.class == "CC" }}>Chair Car</option>
+      </select>
+      </ul>
+    </div>
+  {% endif %}
+
+  <button type="submit" class="btn btn-primary">Search Trains</button>
+{% endmacro %}
+
+{% macro TimeSlot(name, value, label, slot) %}
+  {% set id = name + value %}
+  <div>
+    <input type="checkbox" name="{{name}}" value="{{value}}" id="{{id}}" {{ "checked" if value in args.getlist(name) }}>
+    <label for="{{id}}" class="form-label">{{label}}<div class="time-slot text-muted">{{ slot }}</div></label>
+  </div>
+{% endmacro %}
+
+{% macro TrainCard(train) %}
+  <div class="card mb-2">
+    <div class="card-header">
+      {% if config.flag_show_schedule_link %}
+        <div class="fs-6 float-end"><a class="show-schedule" target="_new" href="/trains/{{train.number}}">View Schedule</a></div>
+      {% endif %}
+      <h5>{{ train.name }} ({{ train.number }}) </h5>
+    </div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-start">
+          <h3>{{ train.departure[:5] }}</h3>
+          <h5>{{ train.from_station_name }}</h5>
+        </div>
+        <div>
+            <h6>{{ train.duration_h | int }}h {{ train.duration_m | int}}m</h6>
+        </div>
+        <div class="text-end">
+          <h3>{{ train.arrival[:5] }}</h3>
+          <h5>{{ train.to_station_name }}</h5>
+        </div>
+      </div>
+      {% if config.flag_bookings %}
+      <div>
+        <a class="btn btn-primary" href="/book-ticket?train={{ train.number }}&class={{ args.class }}&date={{ args.date }}">Book ticket</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro TrainResults(trains) %}
+  {% if trains != None %}
+    <div id="trains" class="mt-3">
+      <div class="row">
+        <div class="{{ 'col-md-9' if config.flag_search_filters else 'col-md-12' }}">
+          {% for train in trains %}
+            {{ TrainCard(train) }}
+          {% endfor %}
+        </div>
+        {% if config.flag_search_filters %}
+          <div class="col-md-3 train-sidebar">
+            <div class="mb-3">
+              <h6>Departure Time</h6>
+              {{ TimeSlot("dt", "slot1", "Early Morning", "Midnight - 8 am") }}
+              {{ TimeSlot("dt", "slot2", "Morning", "8 am - Noon") }}
+              {{ TimeSlot("dt", "slot3", "Afternoon", "Noon - 4 pm") }}
+              {{ TimeSlot("dt", "slot4", "Evening", "4 pm - 8 pm") }}
+              {{ TimeSlot("dt", "slot5", "Night", "8 pm - Midnight") }}
+            </div>
+            <div class="mb-3">
+              <h6>Arrival Time</h6>
+              {{ TimeSlot("at", "slot1", "Early Morning", "Midnight - 8 am") }}
+              {{ TimeSlot("at", "slot2", "Morning", "8 am - Noon") }}
+              {{ TimeSlot("at", "slot3", "Afternoon", "Noon - 4 pm") }}
+              {{ TimeSlot("at", "slot4", "Evening", "4 pm - 8 pm") }}
+              {{ TimeSlot("at", "slot5", "Night", "8 pm - Midnight") }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro HoldOn() %}
+  <div class="mt-3">
+    <div class="alert alert-warning" role="alert">
+      <h4 class="alert-heading">Hold On!</h4>
+      <p>You need to set the feature flag <code>flag_homepage = True</code> in the <code>rajdhani/config.py</code> to enable the home page.</p>
+    </div>
+  </div>
+{% endmacro %}
+
 {% block content %}
   {% if config.flag_homepage %}
     <div class="page-header">
@@ -8,74 +127,10 @@
     </div>
 
     <form method="GET" id="trains-search" autocomplete="off">
-      <div class="mb-3" id="from-station-div">
-        <label for="from-station-text" class="form-label">From</label>
-        <input type="text" name="from_station_name" class="form-control" id="from-station-text" value="{{args.from_station_name}}">
-        <input type="hidden" name ="from_station_code" class="form-control" id="from-station" value="{{args.from_station_code}}">
-        <ul id="from-station-autocomplete-items" class="form-control autocomplete-list" style="display: none;" data-text-target="#from-station-text" data-value-target="#from-station">
-        </ul>
-      </div>
-      <div class="mb-3" id="to-station-div">
-        <label for="from-station" class="form-label">To</label>
-        <input type="text" name="to_station_name" class="form-control" id="to-station-text" value="{{args.to_station_name}}">
-        <input type="hidden" name="to_station_code" class="form-control" id="to-station" value="{{args.to_station_code}}">
-        <ul id="to-station-autocomplete-items" class="form-control autocomplete-list" style="display: none;" data-text-target="#to-station-text" data-value-target="#to-station">
-        </ul>
-      </div>
-      {% if config.flag_ticketclass_in_search %}
-      <div class="mb-3" id="to-station-div">
-        <label for="ticket-class" class="form-label">Class</label>
-        <select name="class" class="form-control" id="ticket-class">
-          <option value="" {{ "selected" if args.class == "" }}>All Classes</option>
-          <option value="SL" {{ "selected" if args.class == "SL" }}>Sleeper</option>
-          <option value="3A" {{ "selected" if args.class == "3A" }}>Third AC</option>
-          <option value="2A" {{ "selected" if args.class == "2A" }}>Second AC</option>
-          <option value="1A" {{ "selected" if args.class == "1A" }}>Firs AC</option>
-          <option value="FC" {{ "selected" if args.class == "FC" }}>First Class</option>
-          <option value="CC" {{ "selected" if args.class == "CC" }}>Chair Car</option>
-        </select>
-        </ul>
-      </div>
-      {% endif %}
-      <button type="submit" class="btn btn-primary">Search Trains</button>
+      {{ SearchFields(args) }}
+      {{ TrainResults(trains) }}
     </form>
-
-    {% if trains != None %}
-    <div id="trains" class="mt-3">
-
-      {% for train in trains %}
-      <div class="card mb-2">
-        <div class="card-header">
-          <h5>{{ train.name }} ({{ train.number }})</h5>
-        </div>
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div class="text-start">
-            <h3>{{ train.departure[:5] }}</h3>
-            <h5>{{ train.from_station_name }}</h5>
-          </div>
-          <div>
-              <h6>{{ train.duration_h }}h {{ train.duration_m }}m</h6>
-          </div>
-          <div class="text-end">
-            <h3>{{ train.arrival[:5] }}</h3>
-            <h5>{{ train.to_station_name }}</h5>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-
-    </div>
-    {% endif %}
-
   {% else %}
-  <div>
-    <br>
-
-    <div class="alert alert-warning" role="alert">
-      <h4 class="alert-heading">Hold On!</h4>
-      <p>You need to set the feature flag <code>flag_homepage = True</code> in the <code>rajdhani/config.py</code> to enable the home page.</p>
-    </div>
-  </div>
-
+    {{ HoldOn() }}
   {% endif %}
 {% endblock %}

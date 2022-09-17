@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Book a ticket</h2>
+</div>
+
+<form method="POST" action="/book-ticket">
+  <div class="row mb-3">
+    <div class="col-auto">
+        <label for="train" class="form-label">Train Number</label>
+        <input type="text" class="form-control" value="{{ train_number }}" disabled></input>
+        <input type="hidden" name="train" class="form-control" value="{{ train_number }}"></input>
+    </div>
+    <div class="col-auto">
+        <label for="class" class="form-label">Ticket Class</label>
+        <input type="text" class="form-control" value="{{ ticket_class }}" disabled></input>
+        <input type="hidden" name="class" class="form-control" value="{{ ticket_class }}"></input>
+    </div>
+    <div class="col-auto">
+        <label for="class" class="form-label">Date</label>
+        <input type="date" class="form-control" value="{{ date }}" disabled></input>
+        <input type="hidden" name="date" class="form-control" value="{{ date }}"></input>
+    </div>
+  </div>
+  <div class="mb-3">
+      <label for="class" class="form-label">Passenger Name</label>
+      <input type="text" name="passenger_name" class="form-control" required></input>
+  </div>
+  <div class="mb-3">
+      <label for="class" class="form-label">Passenger Email</label>
+      <input type="email" name="passenger_email" class="form-control" value="{{ email if email }}" required></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Book now</button>
+</form>
+{% endblock %}

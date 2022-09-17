@@ -1,30 +1,29 @@
 # Rajdhani
 
-## Deployment
+Rajdhani is the starting repository for [The Rajdhani Challenge][].
 
-To deploy this project yourself, you will need a server to host the deployment platform.
+The goal of the challenge is to implement a ticket booking system for indian railways. It is organized as a set of tasks, each task adding a new functionality. A scafolding with templates and routing is already provided in this repository to allow the participants to focus on implementing database queries to fetch/insert the required data.
 
-Instructions for that can be found at https://github.com/pipalacademy/boring-serverless
+## How to run
 
-One extra step that you can add to it is installing the Python dependencies for this
-repository:
+**Step 1:** Install python dependencies
 
 ```
-mkdir apps
-git clone https://github.com/pipalacademy/rajdhani apps/pipalacademy
-venv/bin/python -m pip install -r apps/pipalacademy/requirements.txt
-rm -rf apps/pipalacademy
+$ pip install -r requirements.txt
 ```
 
-Once this is done, you'll have to update the
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) file to set the server_url
-to your server where you hosted the deployment platform.
+You may want to do this in a virtualenv.
 
-For each fork, you'll have to perform a one-time action to enable GitHub actions on the
-repository. This can be found in the "Actions" tab on the repository page.
+**step 2:** Start the dev server
 
-In the `boring-serverless/config.yml` file on your server, you will need to add repository
-names that you want to host on your platform. This is a basic authentication check before
-deployment.
+```
+$ python run.py
+```
 
-All set!
+## How to participate in the challenge
+
+The challenge is currenly open only to a closed group. 
+
+If you are added to the challenge, you'll be able to see your github username on the [The Rajdhani Challenge][] website.
+
+[The Rajdhani Challenge]: https://rajdhani.pipal.in
