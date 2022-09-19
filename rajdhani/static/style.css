@@ -21,3 +21,10 @@
     background-color: var(--bs-primary);
     color: var(--bs-light);
 }
+
+.time-slot {
+    float: right;
+}
+.train-sidebar label {
+    width: 90%;
+}
