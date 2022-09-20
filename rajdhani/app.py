@@ -132,11 +132,12 @@ def progress():
 @app.route("/book-ticket", methods=["GET", "POST"])
 def book_ticket_page():
     if request.method == "POST":
-        db.book_ticket(train_number=request.form.get("train"),
+        booking = db.book_ticket(train_number=request.form.get("train"),
                        ticket_class=request.form.get("class"),
                        departure_date=request.form.get("date"),
                        passenger_name=request.form.get("passenger_name"),
                        passenger_email=request.form.get("passenger_email"))
+        notifications.send_booking_confirmation_email(booking)
 
         return redirect("/thank-you")
     else:
@@ -146,13 +147,6 @@ def book_ticket_page():
         ticket_class = request.args.get("class")
         date = request.args.get("date")
 
-    booking = db.book_ticket(
-                train_number=request.args.get("train"),
-                ticket_class=request.args.get("class"),
-                departure_date=request.args.get("date"),
-                passenger_name=request.args.get("passenger_name"),
-                passenger_email=email)
-    notifications.send_booking_confirmation_email(booking)
     return render_template("book_ticket.html",
                            train_number=train_number,
                            ticket_class=ticket_class,
