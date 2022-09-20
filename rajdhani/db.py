@@ -56,8 +56,8 @@ def search_trains(
 
     This is used to get show the trains on the search results page.
     """
-    alt_froms = get_alternative_stations(from_station)
-    alt_tos = get_alternative_stations(to_station)
+    alt_froms = get_alternative_stations(from_station_code)
+    alt_tos = get_alternative_stations(to_station_code)
 
     with engine.connect() as conn:
         result = conn.execute(
