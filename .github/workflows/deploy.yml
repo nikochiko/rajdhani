@@ -14,4 +14,4 @@ jobs:
         env:
           USERNAME: ${{ github.repository_owner }}
         run: |
-          curl -f -X POST "https://rajdhani.pipal.in/$USERNAME/deploy"
+          curl -f -X POST "https://rajdhani.pipal.in/apps/$USERNAME/deploy"
