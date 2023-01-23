@@ -9,6 +9,7 @@ from . import config
 
 from sqlalchemy import MetaData, create_engine, select, text
 from sqlalchemy import Table, Column, Integer, Float, String
+from sqlalchemy import and_, or_
 
 db_ops.ensure_db()
 
@@ -80,6 +81,28 @@ def search_trains(
         stmt = stmt.where(
             get_ticket_class_column(ticket_class) == 1,
         )
+    if departure_time:
+        conditions = [
+            get_slot_condition(slot, column=train_table.c.departure)
+            for slot in departure_time
+        ]
+        stmt = stmt.where(
+            conditions[0] if len(conditions) == 1 else
+            or_(*conditions)
+        )
+    if arrival_time:
+        conditions = [
+            get_slot_condition(slot, column=train_table.c.arrival)
+            for slot in arrival_time
+        ]
+        stmt = stmt.where(
+            conditions[0] if len(conditions) == 1 else
+            or_(*conditions)
+        )
+
+    stmt = stmt.where(
+        train_table.c.departure
+    )
 
     with engine.connect() as conn:
         result = conn.execute(stmt)
@@ -108,6 +131,14 @@ def get_ticket_class_column(ticket_class):
         "1A": train_table.c.first_ac,
         "CC": train_table.c.chair_car,
     }[ticket_class]
+
+def get_slot_condition(slot, column):
+    if slot == "slot1": return and_(column >= "00:00", column < "08:00")
+    if slot == "slot2": return and_(column >= "08:00", column < "12:00")
+    if slot == "slot3": return and_(column >= "12:00", column < "16:00")
+    if slot == "slot4": return and_(column >= "16:00", column < "20:00")
+    if slot == "slot5": return and_(column >= "20:00", column < "24:00")
+    raise Exception("unknown slot")
 
 def get_schedule(train_number):
     """Returns the schedule of a train.
