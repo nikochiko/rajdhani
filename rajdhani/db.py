@@ -143,7 +143,18 @@ def get_slot_condition(slot, column):
 def get_schedule(train_number):
     """Returns the schedule of a train.
     """
-    return placeholders.SCHEDULE
+    stmt = text("SELECT * FROM schedule WHERE train_number = :train_number")
+    with engine.connect() as conn:
+        result = conn.execute(stmt, train_number=train_number)
+        return [
+            {
+                "station_code": row.station_code,
+                "station_name": row.station_name,
+                "day": row.day,
+                "arrival": row.arrival,
+                "departure": row.departure,
+            } for row in result
+        ]
 
 def book_ticket(train_number, ticket_class, departure_date, passenger_name, passenger_email):
     """Book a ticket for passenger
