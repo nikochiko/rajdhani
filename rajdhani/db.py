@@ -8,7 +8,7 @@ from . import db_ops
 from . import config
 
 from sqlalchemy import MetaData, create_engine, select, text
-from sqlalchemy import Table, Column, Integer, String
+from sqlalchemy import Table, Column, Integer, Float, String
 
 db_ops.ensure_db()
 
@@ -28,6 +28,14 @@ train_table = Table(
     Column("arrival", String),
     Column("duration_h", Integer),
     Column("duration_m", Integer),
+    Column("distance", Float),
+    Column("return_train", String),
+    Column("sleeper", Integer),
+    Column("third_ac", Integer),
+    Column("second_ac", Integer),
+    Column("first_ac", Integer),
+    Column("first_class", Integer),
+    Column("chair_car", Integer),
 )
 
 def search_stations(q):
@@ -62,10 +70,17 @@ def search_trains(
 
     This is used to get show the trains on the search results page.
     """
+    # TODO: This task should mention how input is taken for ticket
+    # class.
     stmt = select(train_table).where(
         train_table.c.from_station_code == from_station_code,
         train_table.c.to_station_code == to_station_code,
     )
+    if ticket_class is not None:
+        stmt = stmt.where(
+            get_ticket_class_column(ticket_class) == 1,
+        )
+
     with engine.connect() as conn:
         result = conn.execute(stmt)
         return [make_train(row) for row in result]
@@ -84,6 +99,15 @@ def make_train(row):
         "duration_h": row.duration_h,
         "duration_m": row.duration_m,
     }
+
+def get_ticket_class_column(ticket_class):
+    return {
+        "SL": train_table.c.sleeper,
+        "3A": train_table.c.third_ac,
+        "2A": train_table.c.second_ac,
+        "1A": train_table.c.first_ac,
+        "CC": train_table.c.chair_car,
+    }[ticket_class]
 
 def get_schedule(train_number):
     """Returns the schedule of a train.
