@@ -5,8 +5,13 @@ Module to interact with the database.
 from . import placeholders
 from . import db_ops
 
+from . import config
+
+from sqlalchemy import create_engine, text
+
 db_ops.ensure_db()
 
+engine = create_engine(config.db_uri)
 
 def search_stations(q):
     """Returns the top ten stations matching the given query string.
@@ -16,9 +21,16 @@ def search_stations(q):
     The q is the few characters of the station name or
     code entered by the user.
     """
-    # TODO: make a db query to get the matching stations
-    # and replace the following dummy implementation
-    return placeholders.AUTOCOMPLETE_STATIONS
+    query = text(
+        "SELECT code, name FROM station WHERE code = :q OR UPPER(name) LIKE :like",
+    )
+    with engine.connect() as conn:
+        result = conn.execute(
+            query,
+            {"q": q.upper(), "like": f"%{q.upper()}%"}
+        )
+        return [{"code": row.code, "name": row.name} for row in result]
+
 
 def search_trains(
         from_station_code,
