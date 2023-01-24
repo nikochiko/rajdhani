@@ -7,36 +7,23 @@ from . import db_ops
 
 from . import config
 
-from sqlalchemy import MetaData, create_engine, select, text
+from sqlalchemy import MetaData, create_engine, select, insert, text
 from sqlalchemy import Table, Column, Integer, Float, String
 from sqlalchemy import and_, or_
 
 db_ops.ensure_db()
 
 engine = create_engine(config.db_uri)
-
-metadata_obj = MetaData()
+metadata_obj = MetaData(bind=engine)
 train_table = Table(
     "train",
     metadata_obj,
-    Column("number", String, primary_key=True),
-    Column("name", String),
-    Column("from_station_code", String),
-    Column("from_station_name", String),
-    Column("to_station_code", String),
-    Column("to_station_name", String),
-    Column("departure", String),
-    Column("arrival", String),
-    Column("duration_h", Integer),
-    Column("duration_m", Integer),
-    Column("distance", Float),
-    Column("return_train", String),
-    Column("sleeper", Integer),
-    Column("third_ac", Integer),
-    Column("second_ac", Integer),
-    Column("first_ac", Integer),
-    Column("first_class", Integer),
-    Column("chair_car", Integer),
+    autoload=True,
+)
+booking_table = Table(
+    "booking",
+    metadata_obj,
+    autoload=True,
 )
 
 def search_stations(q):
@@ -159,10 +146,53 @@ def get_schedule(train_number):
 def book_ticket(train_number, ticket_class, departure_date, passenger_name, passenger_email):
     """Book a ticket for passenger
     """
-    # TODO: make a db query and insert a new booking
-    # into the booking table
+    (
+        "INSERT INTO booking "
+        "(train_number, from_station_code, to_station_code, "
+        "passenger_name, passenger_email, ticket_class, date)"
+        "VALUES "
+        "(:train_number, :from_station_code, :to_station_code,"
+        " :passenger_name, :passenger_email, :ticket_class, :departure_date)"
+    )
+    with engine.connect() as conn:
+        train = get_train_by_number(conn, train_number)
+        stmt = insert(booking_table).values(
+            train_number=train_number,
+            from_station_code=train.from_station_code,
+            to_station_code=train.to_station_code,
+            passenger_name=passenger_name,
+            passenger_email=passenger_email,
+            ticket_class=ticket_class,
+            date=departure_date)
+        result = conn.execute(stmt)
+        id = result.inserted_primary_key[0]
+        return make_booking(get_booking_by_id(conn, id))
 
     return placeholders.TRIPS[0]
+
+def get_booking_by_id(conn, id):
+    stmt = text("select * from booking where id=:id")
+    return next(conn.execute(stmt, {"id": id}))
+
+def get_train_by_number(conn, train_number):
+    stmt = select(train_table).where(train_table.c.number == train_number)
+    return next(conn.execute(stmt))
+
+def make_booking(row):
+    with engine.connect() as conn:
+        train = get_train_by_number(conn, row.train_number)
+    return {
+        "train_number": row.train_number,
+        "train_name": train.name,
+        "from_station_code": row.from_station_code,
+        "from_station_name": train.from_station_name,
+        "to_station_code": row.to_station_code,
+        "to_station_name": train.to_station_name,
+        "ticket_class": row.ticket_class,
+        "date": row.date,
+        "passenger_name": row.passenger_name,
+        "passenger_email": row.passenger_email,
+    }
 
 def get_trips(email):
     """Returns the bookings made by the user
