@@ -197,7 +197,9 @@ def make_booking(row):
 def get_trips(email):
     """Returns the bookings made by the user
     """
-    # TODO: make a db query and get the bookings
-    # made by user with `email`
-
-    return placeholders.TRIPS
+    stmt = select(booking_table).where(
+        booking_table.c.passenger_email == email
+    )
+    with engine.connect() as conn:
+        result = conn.execute(stmt)
+        return [make_booking(row) for row in result]
