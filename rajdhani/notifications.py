@@ -5,9 +5,9 @@ from . import config
 from textwrap import dedent
 from smtplib import SMTP
 
-client = SMTP(host=config.smtp_hostname, port=int(config.smtp_port))
-if config.smtp_username and config.smtp_password:
-    client.login(config.smtp_username, config.smtp_password)
+# client = SMTP(host=config.smtp_hostname, port=int(config.smtp_port))
+# if config.smtp_username and config.smtp_password:
+#     client.login(config.smtp_username, config.smtp_password)
 
 
 def send_booking_confirmation_email(booking):
