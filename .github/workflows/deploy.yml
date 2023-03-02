@@ -17,5 +17,5 @@ jobs:
         env:
           USERNAME: ${{ github.repository_owner }}
         run: |
-          curl -f -X POST "https://hamr.kaustubh-dev.pipal.in/$USERNAME/deploy"
+          curl -f -X POST "https://hamr.kaustubh-dev.pipal.in/apps/$USERNAME/deploy"
           curl -f -X POST "https://capstone.kaustubh-dev.pipal.in/api/users/$USERNAME/projects/$PROJECT_NAME/checks"
